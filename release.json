@@ -1,15 +1,15 @@
 {
   "site": "https://gluck97.github.io/medical-report-overview/",
   "repository": "https://github.com/gluck97/medical-report-overview",
-  "sourceHash": "44d4f5b30dc04bff9dcac11497f49f28a0671ea6a2703b9c807a30814e5ad69a",
-  "dataThrough": "2026-11-08",
-  "recordUpdated": "2026-11-10",
-  "metrics": 48,
-  "measurements": 72,
+  "sourceHash": "cc026ef3f1e8aa2e390d87d951bbbf6f888c03d6c0384dc3ae9a83803975cdc6",
+  "dataThrough": "2026-11-11",
+  "recordUpdated": "2026-11-11",
+  "metrics": 69,
+  "measurements": 146,
   "counts": {
-    "groups": 32,
-    "files": 35,
-    "checks": 31
+    "groups": 34,
+    "files": 37,
+    "checks": 33
   },
   "originals": [
     {
@@ -186,18 +186,28 @@
       "path": "住院记录/2026-10-28至2026-11-08_首次住院/2026-11-08_出院记录_02_治疗经过与出院医嘱.jpg",
       "sha256": "1b1c9fbde72f64ab38ca8bb587c741ec96a8ece51c113b5f87802da322bb443f",
       "bytes": 192382
+    },
+    {
+      "path": "检验/2026-11-11_065154_血常规_血细胞分析五分类_完整页面.png",
+      "sha256": "d1803ee56f8cfa87746e28a76c25ccb868c748379b9eedfffd3cd62a8436d162",
+      "bytes": 485572
+    },
+    {
+      "path": "检验/2026-11-11_102528_肾功三项_肝功五项_完整页面.png",
+      "sha256": "3373eea05ce4cfa98e6387c6868e0613fbb37461af523c078a5ddd3579603a0c",
+      "bytes": 425836
     }
   ],
   "files": [
     {
       "path": "index.html",
-      "sha256": "e093f05e17fd29b1bf577d86642c68a729997e43929d3bf969abf2e858e08ae1",
-      "bytes": 282106
+      "sha256": "191c73449e15033193c58476379b08ed656034810835e51c63518e7e0874e0d6",
+      "bytes": 421107
     },
     {
       "path": "检查与治疗总览.md",
-      "sha256": "b7d11f6509d9a3a2ae3fdcf566a5c0dd39ae7661806c50b483e2a3d6cba21a93",
-      "bytes": 52453
+      "sha256": "e96b3c8b0c1feda8cee168df5a0b95b27742ee830d21ab76b8869be11835cf26",
+      "bytes": 60477
     },
     {
       "path": ".nojekyll",
@@ -211,7 +221,7 @@
     },
     {
       "path": "README.md",
-      "sha256": "993a023afef8f90dfca418e1b7bc216851603dba486efd6b79a6777e5c13dc75",
+      "sha256": "30521d8de46e3ee8de5c7eee9a3d7d7377254ba663e8298b9d60905f5537e9ee",
       "bytes": 946
     },
     {
@@ -378,6 +388,16 @@
       "path": "检验/2026-11-07_085359_血常规_血细胞分析五分类.pdf",
       "sha256": "e1bdc5225f376b5534d55ac04e12ee134f5c581a69057abf9fa2649288b92053",
       "bytes": 157114
+    },
+    {
+      "path": "检验/2026-11-11_065154_血常规_血细胞分析五分类_完整页面.png",
+      "sha256": "d1803ee56f8cfa87746e28a76c25ccb868c748379b9eedfffd3cd62a8436d162",
+      "bytes": 485572
+    },
+    {
+      "path": "检验/2026-11-11_102528_肾功三项_肝功五项_完整页面.png",
+      "sha256": "3373eea05ce4cfa98e6387c6868e0613fbb37461af523c078a5ddd3579603a0c",
+      "bytes": 425836
     },
     {
       "path": "病理/2026-11-02_直肠活检/照片6_病理诊断报告单.jpg",
