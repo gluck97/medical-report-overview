@@ -503,6 +503,14 @@ const fmt=n=>Number.isInteger(n)?String(n):String(Number(n.toFixed(4)));
 const short=d=>d.slice(5).replace('-','/');
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const chunks=(a,n)=>Array.from({length:Math.ceil(a.length/n)},(_,i)=>a.slice(i*n,(i+1)*n));
+const filePart=s=>String(s).trim().replace(/[\\/:*?"<>|\s·／]+/g,'-');
+function exportDate(now=new Date()){return String(now.getFullYear())+String(now.getMonth()+1).padStart(2,'0')+String(now.getDate()).padStart(2,'0');}
+function exportFileName(sheet,now=new Date()){
+ const classification=sheet.category==='血常规'?sheet.category+'-'+sheet.title:sheet.title;
+ const page=sheet.exportParts>1?'_'+String(sheet.exportPart).padStart(2,'0'):'';
+ return exportDate(now)+'_指标_'+filePart(classification)+page+'.png';
+}
+function exportArchiveName(category,now=new Date()){return exportDate(now)+'_指标_'+filePart(category.label)+'.zip';}
 function reference(r){if(!r||r.low==null&&r.high==null)return '未提供';if(r.low==null)return '≤'+fmt(r.high);if(r.high==null)return '≥'+fmt(r.low);return fmt(r.low)+'–'+fmt(r.high);}
 function rangeKey(r){return r?JSON.stringify([r.low,r.high,r.unit||'',r.note||'']):'missing';}
 function status(p){if(!p)return 'missing';const r=p.reference;if(!r||r.low==null&&r.high==null)return p.flag||'unknown';if(r.low!=null&&p.value<r.low)return 'low';if(r.high!=null&&p.value>r.high)return 'high';return 'normal';}
@@ -551,7 +559,7 @@ function sheetsFor(category,D){
    for(const [i,rows] of chunks(records,4).entries())out.push({id:section.id+'-'+i,kind:'records',title:section.title,category:category.label,records:rows,latestDate:last(rows)?.date,dataThrough:D.dataThrough,reportIds:unique(rows.flatMap(r=>r.reportIds)),recordPage:i+1,recordPages:Math.ceil(records.length/4),sourceHash:D.sourceHash});
   }
  }
- out.forEach((s,i)=>{s.index=i;s.count=out.length;s.fileName='医生版_'+s.title.replace(/[\\/:*?"<>|\s]+/g,'_')+'_'+s.latestDate+'_'+String(i+1).padStart(2,'0')+'.png';});
+ out.forEach((s,i)=>{const related=out.filter(x=>x.title===s.title);s.index=i;s.count=out.length;s.exportPart=related.indexOf(s)+1;s.exportParts=related.length;s.fileName=exportFileName(s);});
  return out;
 }
 function facts(sheet){
@@ -694,18 +702,19 @@ function mount(D,host,helpers){
   if(el.hasAttribute('data-doc-more')){state.more=!state.more;redraw();return;}
   if(el.hasAttribute('data-doc-sheet')){state.sheet=Number(el.dataset.docSheet);redraw();return;}
   const sheet=current[state.sheet];
-  if(el.hasAttribute('data-doc-open')){helpers.openImage(imageFor(sheet),sheet.title,sheet.fileName);return;}
+  if(el.id==='doctorSave'){el.download=exportFileName(sheet);return;}
+  if(el.hasAttribute('data-doc-open')){helpers.openImage(imageFor(sheet),sheet.title,()=>exportFileName(sheet));return;}
   if(el.hasAttribute('data-doc-originals')){const reports=D.reports.filter(r=>sheet.reportIds.includes(r.id));helpers.showDetail(sheet.title+' · 原报告',reports.map(r=>`<div class="detail-row"><strong>${esc(r.date)} · ${esc(r.title)}</strong><div class="files">${helpers.sourceButtons(r.files)}</div></div>`).join(''));return;}
   if(el.hasAttribute('data-doc-batch')){
-   el.disabled=true;const sheets=[...current],files=[],category=choose();let progress=host.querySelector('.doctor-progress');
-   try{for(const [i,s] of sheets.entries()){progress.textContent='正在准备 '+(i+1)+' / '+sheets.length+' 张图片…';await new Promise(resolve=>setTimeout(resolve,0));files.push({name:s.fileName,bytes:dataBytes(imageFor(s))});}
-    const url=URL.createObjectURL(zip(files)),a=document.createElement('a');a.href=url;a.download='医生版_'+category.label+'_'+D.dataThrough+'.zip';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);progress.textContent='已准备 '+files.length+' 张 PNG 图片。';
+   el.disabled=true;const sheets=[...current],files=[],category=choose(),savedAt=new Date();let progress=host.querySelector('.doctor-progress');
+   try{for(const [i,s] of sheets.entries()){progress.textContent='正在准备 '+(i+1)+' / '+sheets.length+' 张图片…';await new Promise(resolve=>setTimeout(resolve,0));files.push({name:exportFileName(s,savedAt),bytes:dataBytes(imageFor(s))});}
+    const url=URL.createObjectURL(zip(files)),a=document.createElement('a');a.href=url;a.download=exportArchiveName(category,savedAt);a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);progress.textContent='已准备 '+files.length+' 张 PNG 图片。';
    }catch(err){progress.textContent='保存未完成，请逐张保存图片。';console.error(err);}finally{el.disabled=false;}
   }
  });
  redraw();return {catalog,redraw,getSheets:()=>current,getImage:sheet=>imageFor(sheet)};
 }
-return {buildCatalog,sheetsFor,facts,footnotes,status,reference,render,textVersion,zip,crc32,mount};
+return {buildCatalog,sheetsFor,facts,footnotes,status,reference,render,textVersion,zip,crc32,mount,exportFileName,exportArchiveName};
 });
 
 const D = JSON.parse(document.getElementById('patientData').textContent);
@@ -729,7 +738,7 @@ const events=[...baseReports,...extraTreatments,...oralEvents];
 const viewTitles={doctor:['医生版','检查数据与报告结果，保存成图'],overview:['诊疗手册','检查、治疗与变化，放在一起看'],timeline:['诊疗进展','检查、发现与治疗，连起来看'],imaging:['影像对照','按部位看发现，按证据看变化'],trends:['指标变化','逐次对照，保留每一份依据'],issues:['复诊准备','下次就诊前，可以先看这里']};
 function setView(view,scroll=true,remember=true){if(!$('view-'+view))return;if(remember)rememberTrendPosition();state.view=view;document.body.dataset.view=view;document.querySelectorAll('.view').forEach(e=>e.hidden=e.id!=='view-'+view);document.querySelectorAll('.nav [data-view]').forEach(b=>b.setAttribute('aria-current',b.dataset.view===view?'page':'false'));$('pageTitle').textContent=viewTitles[view][0];$('pageEyebrow').textContent=viewTitles[view][1];document.title=viewTitles[view][0]+' · Heilung';if(view==='doctor')renderDoctor();if(view==='timeline')renderTimeline();if(view==='trends')renderTrends();if(view==='imaging')renderImaging();hideTooltip();if(scroll){if(view==='trends')restoreTrendPosition();else window.scrollTo({top:0,behavior:'auto'});}}
 let doctorApp=null;
-function renderDoctor(){if(!doctorApp)doctorApp=DoctorSummary.mount(D,$('doctorApp'),{sourceButtons,showDetail,openImage:(url,title,name)=>{$('doctorImage').src=url;$('doctorImage').alt=title+'医生版汇总图片';$('doctorImageTitle').textContent=title;$('doctorImageSave').href=url;$('doctorImageSave').download=name;$('doctorZoom').classList.remove('fit');$('doctorFit').textContent='适应宽度';$('doctorDialog').showModal();$('doctorZoom').scrollTo(0,0)}});}
+function renderDoctor(){if(!doctorApp)doctorApp=DoctorSummary.mount(D,$('doctorApp'),{sourceButtons,showDetail,openImage:(url,title,getName)=>{$('doctorImage').src=url;$('doctorImage').alt=title+'医生版汇总图片';$('doctorImageTitle').textContent=title;$('doctorImageSave').href=url;$('doctorImageSave').download=getName();$('doctorImageSave').onclick=()=>{$('doctorImageSave').download=getName()};$('doctorZoom').classList.remove('fit');$('doctorFit').textContent='适应宽度';$('doctorDialog').showModal();$('doctorZoom').scrollTo(0,0)}});}
 $('doctorFit').addEventListener('click',()=>{const fit=$('doctorZoom').classList.toggle('fit');$('doctorFit').textContent=fit?'放大查看':'适应宽度';});
 function sourceButtons(files){return files.map(f=>f.type==='pdf'?`<a class="btn" href="${esc(f.url)}" target="_blank" rel="noopener">${icon('file')}${esc(f.label)} · PDF</a>`:`<button class="btn" data-image="${esc(f.url)}" data-name="${esc(f.name)}">${icon('file')}${esc(f.label)}</button>`).join('')}
 function openReport(id){let event=events.find(x=>x.eventId===id||x.id===id);if(!event)return;state.milestone=null;setView('timeline');state.scope='all';state.category='全部';state.search='';$('search').value='';renderTimeline();let el=$('event-'+event.eventId);el.open=true;el.scrollIntoView({block:'center',behavior:'auto'});el.querySelector('summary').focus({preventScroll:true});}
