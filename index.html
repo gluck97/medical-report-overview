@@ -628,7 +628,10 @@ function renderLab(sheet,document){
   let previous=-2;s.points.forEach(q=>{const idx=sheet.dates.indexOf(q.date);if(idx===previous+1)ctx.lineTo(x(q.date),y(q.value));else ctx.moveTo(x(q.date),y(q.value));previous=idx;});ctx.stroke();ctx.restore();
   for(const [j,q] of s.points.entries()){
    const isLast=j===s.points.length-1,px=x(q.date),py=y(q.value);dot(ctx,px,py,isLast&&['high','low'].includes(st)?C.amber:C.green,isLast?8:6.5);
-   if(!isLast){font(ctx,23);const tw=ctx.measureText(q.display).width;background(ctx,px-tw/2-4,py-41,tw+8,28,C.paper);write(ctx,q.display,px,py-18,23,C.ink,'center');}
+   const size=isLast?24:23, weight=isLast?600:400;
+   font(ctx,size,weight);const tw=ctx.measureText(q.display).width;
+   background(ctx,px-tw/2-4,py-41,tw+8,28,C.paper);
+   write(ctx,q.display,px,py-18,size,isLast?color:C.ink,'center',weight);
   }
   if(p.date!==sheet.latestDate)write(ctx,'—',x(sheet.latestDate),y(p.value)+6,24,C.muted,'center');
   stroke(ctx,104,top+(i+1)*rowH,W-104,top+(i+1)*rowH);
