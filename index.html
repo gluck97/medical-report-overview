@@ -617,7 +617,7 @@ function renderLab(sheet,document){
  const W=1880, rowH=222, notes=footnotes(sheet), canvas=document.createElement('canvas');canvas.width=W;
  let cursor=478;
  const blocks=sheet.metricSections?sheet.metricSections.map(section=>{
-  const metrics=section.metricIds.map(id=>sheet.metrics.find(m=>m.id===id)),titleY=cursor+36,axisY=cursor+104+eventSpace,top=axisY+32,end=top+metrics.length*rowH;
+  const metrics=section.metricIds.map(id=>sheet.metrics.find(m=>m.id===id)),titleY=cursor+58,axisY=cursor+144+eventSpace,top=axisY+32,end=top+metrics.length*rowH;
   cursor=end+42;return {title:section.title,titleY,axisY,top,end,metrics};
  }):[{axisY:506+eventSpace,top:538+eventSpace,end:538+eventSpace+sheet.metrics.length*rowH,metrics:sheet.metrics}];
  const bottom=last(blocks).end;
@@ -627,7 +627,7 @@ function renderLab(sheet,document){
  const start=624,end=1346, axisDates=sheet.axisDates||sheet.dates, x=date=>axisDates.length===1?985:start+axisDates.indexOf(date)*(end-start)/(axisDates.length-1);
  for(const block of blocks){
  const {top,axisY,metrics}=block;
- if(block.title){background(ctx,104,block.titleY-32,W-208,58,'#f1f2e9');write(ctx,block.title,124,block.titleY+7,34,C.green,'left',600);write(ctx,metrics.length+' 项指标',W-124,block.titleY+5,23,C.muted,'right');}
+ if(block.title){background(ctx,104,block.titleY-58,W-208,88,C.green);write(ctx,block.title,132,block.titleY,46,C.paper,'left',700);write(ctx,metrics.length+' 项指标',W-132,block.titleY-4,25,'#e9eee5','right',500);stroke(ctx,104,block.titleY+46,W-104,block.titleY+46,false,C.green);}
  write(ctx,'指标',104,axisY,23,C.muted);write(ctx,sheet.latestDate===sheet.overallLatest?'最新结果':'本页末次',1513,axisY,23,C.muted);write(ctx,short(sheet.latestDate),W-104,axisY,29,C.ink,'right');
  for(const d of axisDates){const measured=sheet.dates.includes(d);write(ctx,short(d),x(d),axisY,measured?29:25,measured?C.ink:C.muted,'center',measured?500:400);stroke(ctx,x(d),top,x(d),block.end,true,C.guide);}
  for(const d of eventDates){const same=events.filter(e=>e.date===d),px=x(d);
