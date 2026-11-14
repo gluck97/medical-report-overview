@@ -639,9 +639,13 @@ function renderLab(sheet,document){
  stroke(ctx,104,top,W-104,top,false);
  for(const [i,s] of metrics.entries()){
   const cy=top+i*rowH+112, ymin=cy-79,ymax=cy+57, p=last(s.points), st=status(p), color=['high','low'].includes(st)?C.amber:C.ink;
-  wrap(ctx,label(s),104,cy-9,340,30,C.ink,38,500);
   const subtitle=s.id==='总胆红素'?'总胆红素':s.id==='白蛋白'?'白蛋白':s.subtitle;
-  if(subtitle&&subtitle!==label(s))wrap(ctx,subtitle,104,cy+39,330,22,C.muted,30);
+  font(ctx,32,600);const titleLines=linesOf(ctx,label(s),292);
+  font(ctx,22);const subtitleLines=subtitle&&subtitle!==label(s)?linesOf(ctx,subtitle,292):[];
+  const titleHeight=titleLines.length*40,subtitleGap=subtitleLines.length?10:0,contentHeight=titleHeight+subtitleGap+subtitleLines.length*29,boxHeight=Math.max(112,contentHeight+32),textTop=cy-contentHeight/2;
+  ctx.save();roundedPanel(ctx,104,cy-boxHeight/2,340,boxHeight,12,'#f7f8f2');ctx.strokeStyle='#8b9c84';ctx.lineWidth=2.4;ctx.setLineDash([]);ctx.stroke();ctx.restore();
+  titleLines.forEach((line,n)=>write(ctx,line,128,textTop+31+n*40,32,C.ink,'left',600));
+  subtitleLines.forEach((line,n)=>write(ctx,line,128,textTop+titleHeight+subtitleGap+22+n*29,22,C.muted));
   if(!p){write(ctx,'—',1513,cy+1,43,C.muted);write(ctx,'本页未检测',1513,cy+47,22,C.muted);stroke(ctx,104,top+(i+1)*rowH,W-104,top+(i+1)*rowH);continue;}
   write(ctx,p.display+(st==='high'?' ↑':st==='low'?' ↓':''),1513,cy+1,44,color);
   wrap(ctx,'参考 '+reference(p.reference)+(s.unit?' '+s.unit:''),1513,cy+47,270,21,C.muted,29);
